@@ -57,29 +57,29 @@ function Restore-AxNuGetPackages {
         $folderPath = Split-Path -Parent $packagesConfigPath
         $nugetFolderPath = Join-Path -Path $folderPath -ChildPath "packages"
         $frameworkVersion = "netstandard2.0"
-        $axReferenceFolderPath = Join-Path -Path $packageFolder -ChildPath "AxReference"
+        $axReferenceFolder = Get-ChildItem "AxReference" -Path $packageFolder -Directory -Recurse
 
         # Install NuGet packages
         Invoke-Expression -Command "nuget restore $packagesConfigPath -PackagesDirectory $nugetFolderPath -ConfigFile $nugetConfigPath"
 
         # Get package folders
-        $packageFolders = Get-ChildItem -Path $nugetFolderPath -Directory
+        $nugetItemFolders = Get-ChildItem -Path $nugetFolderPath -Directory
 
-        foreach ($packageFolder in $packageFolders) {
+        foreach ($nugetItemFolder in $nugetItemFolders) {
             # Get compatible DLLs
-            $compatibleDlls = Get-CompatibleDlls -nugetFolderPath $packageFolder.FullName -frameworkVersion $frameworkVersion
+            $compatibleDlls = Get-CompatibleDlls -nugetFolderPath $nugetItemFolder.FullName -frameworkVersion $frameworkVersion
 
             # If not found, use net472 as fallback
             if ($compatibleDlls.Count -eq 0) {
                 $frameworkVersion = "net472"
-                $compatibleDlls = Get-CompatibleDlls -nugetFolderPath $packageFolder.FullName -frameworkVersion $frameworkVersion
+                $compatibleDlls = Get-CompatibleDlls -nugetFolderPath $nugetItemFolder.FullName -frameworkVersion $frameworkVersion
             }
 
             # Copy DLLs and create AxReference files
             foreach ($dll in $compatibleDlls) {
                 $destinationPath = Join-Path -Path $folderPath -ChildPath $dll.Name
                 Copy-Dlls -sourcePath $dll.FullName -destinationPath $destinationPath
-                Create-AxReference -dllPath $destinationPath -axReferenceFolderPath $axReferenceFolderPath
+                Create-AxReference -dllPath $destinationPath -axReferenceFolderPath $axReferenceFolder.FullName
             }
         }
     }
@@ -93,7 +93,7 @@ function Restore-AxNuGetPackages {
 
     # Loop over all packages in the environment
     foreach ($package in $packages) {
-        $packagesConfigPath = Join-Path -Path $package.Folder -ChildPath "packages.config"
+        $packagesConfigPath = Join-Path -Path $package.Folder -ChildPath "bin/packages.config"
         if (Test-Path -Path $packagesConfigPath) {
             Install-PackagesAndCreateAxReferences -packagesConfigPath $packagesConfigPath -packageFolder $package.Folder -nugetConfigPath $nugetConfigPath
         }
