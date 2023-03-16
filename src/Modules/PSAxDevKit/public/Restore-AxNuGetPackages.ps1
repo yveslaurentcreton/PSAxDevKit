@@ -50,7 +50,8 @@ function Restore-AxNuGetPackages {
     function Install-PackagesAndCreateAxReferences {
         param(
             [string]$packagesConfigPath,
-            [string]$packageFolder
+            [string]$packageFolder,
+            [string]$nugetConfigPath
         )
 
         $folderPath = Split-Path -Parent $packagesConfigPath
@@ -59,7 +60,7 @@ function Restore-AxNuGetPackages {
         $axReferenceFolderPath = Join-Path -Path $packageFolder -ChildPath "AxReference"
 
         # Install NuGet packages
-        nuget.exe restore $packagesConfigPath -PackagesDirectory $nugetFolderPath
+        Invoke-Expression -Command "nuget restore $packagesConfigPath -PackagesDirectory $nugetFolderPath -ConfigFile $nugetConfigPath"
 
         # Get package folders
         $packageFolders = Get-ChildItem -Path $nugetFolderPath -Directory
@@ -88,12 +89,13 @@ function Restore-AxNuGetPackages {
     }
 
     $packages = Get-AxPackages -EnvironmentName $EnvironmentName
+    $nugetConfigPath = Join-Path -Path $axEnvironment.Folder -ChildPath "nuget.config"
 
     # Loop over all packages in the environment
     foreach ($package in $packages) {
         $packagesConfigPath = Join-Path -Path $package.Folder -ChildPath "packages.config"
         if (Test-Path -Path $packagesConfigPath) {
-            Install-PackagesAndCreateAxReferences -packagesConfigPath $packagesConfigPath -packageFolder $package.Folder
+            Install-PackagesAndCreateAxReferences -packagesConfigPath $packagesConfigPath -packageFolder $package.Folder -nugetConfigPath $nugetConfigPath
         }
     }
 }

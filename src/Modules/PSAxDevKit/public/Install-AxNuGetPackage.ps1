@@ -12,29 +12,35 @@ function Install-AxNuGetPackage {
     function Get-LatestPackageVersion {
         param(
             [string]$packageId,
+            [string]$nugetConfigPath,
             [switch]$prerelease
         )
-
+    
         $nugetArguments = "list $packageId"
         if ($prerelease) {
-            $nugetArguments += " -Prerelease"
+            $nugetArguments += " -PreRelease"
         }
-
-        $nugetOutput = nuget.exe $nugetArguments
-        $latestVersion = ($nugetOutput -split " ")[-1]
+    
+        if ($nugetConfigPath) {
+            $nugetArguments += " -ConfigFile $nugetConfigPath"
+        }
+    
+        $nugetOutput = Invoke-Expression -Command "nuget $nugetArguments"
+        $latestVersion = ($nugetOutput[-1] -split " ")[-1]
         return $latestVersion
-    }
+    }     
 
     function Add-PackageToConfig {
         param(
             [string]$packagesConfigPath,
             [string]$packageId,
             [string]$packageVersion,
+            [string]$nugetConfigPath,
             [switch]$prerelease
         )
     
         if (-not $packageVersion) {
-            $packageVersion = Get-LatestPackageVersion -packageId $packageId -prerelease:$prerelease
+            $packageVersion = Get-LatestPackageVersion -packageId $packageId -nugetConfigPath $nugetConfigPath -prerelease:$prerelease
         }
     
         if (Test-Path -Path $packagesConfigPath) {
@@ -71,14 +77,14 @@ function Install-AxNuGetPackage {
 
     $binFolderPath = Join-Path -Path $axPackage.Folder -ChildPath "bin"
     $packagesConfigPath = Join-Path -Path $binFolderPath -ChildPath "packages.config"
-
-    Add-PackageToConfig -packagesConfigPath $packagesConfigPath -packageId $NuGetPackageId -packageVersion $PackageVersion -prerelease:$Prerelease
-
     $axEnvironment = Get-AxEnvironments | Where-Object { $_.Name -eq $Environment }
+
     if (-not $axEnvironment) {
         throw "Environment '$Environment' not found."
     }
 
     $nugetConfigPath = Join-Path -Path $axEnvironment.Folder -ChildPath "nuget.config"
+
+    Add-PackageToConfig -packagesConfigPath $packagesConfigPath -packageId $NuGetPackageId -packageVersion $PackageVersion -nugetConfigPath $nugetConfigPath -prerelease:$Prerelease
     Restore-AxNuGetPackages -AxPackageName $AxPackageName -NugetConfigPath $nugetConfigPath
 }
