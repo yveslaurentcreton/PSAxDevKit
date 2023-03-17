@@ -1,6 +1,6 @@
 function Get-AxModels {
     param (
-        [string]$EnvironmentName
+        [string]$AxEnvironmentFolder = (Get-CurrentAxEnvironment).Folder
     )
 
     function Get-AxModelDisplayNames {
@@ -25,11 +25,7 @@ function Get-AxModels {
         return $resultList
     }
 
-    if (-not $EnvironmentName) {
-        $EnvironmentName = (Get-CurrentAxEnvironment).Name
-    }
-
-    $packages = Get-AxPackages -EnvironmentName $EnvironmentName
+    $packages = Get-AxPackages -AxEnvironmentFolder $AxEnvironmentFolder
     $modelList = @()
 
     foreach ($package in $packages) {

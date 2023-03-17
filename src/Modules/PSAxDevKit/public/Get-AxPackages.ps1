@@ -1,21 +1,12 @@
 function Get-AxPackages {
     param (
-        [string]$EnvironmentName
+        [string]$AxEnvironmentFolder = (Get-CurrentAxEnvironment).AxEnvironmentFolder
     )
 
-    if (-not $EnvironmentName) {
-        $EnvironmentName = (Get-CurrentAxEnvironment).Name
-    }
+    # Search for package folders
+    $packageFolders = Get-ChildItem -Path $AxEnvironmentFolder -Directory | Where-Object { Test-Path -Path (Join-Path -Path $_.FullName -ChildPath "Descriptor") }
 
-    $environment = Get-AxEnvironments | Where-Object { $_.Name -eq $EnvironmentName }
-
-    if (-not $environment) {
-        throw "Environment '$EnvironmentName' not found."
-    }
-
-    $metadataFolderPath = $environment.Folder
-    $packageFolders = Get-ChildItem -Path $metadataFolderPath -Directory | Where-Object { Test-Path -Path (Join-Path -Path $_.FullName -ChildPath "Descriptor") }
-
+    # Return the fetched information
     foreach ($packageFolder in $packageFolders) {
         New-Object -TypeName PSObject -Property @{
             Name   = $packageFolder.Name
