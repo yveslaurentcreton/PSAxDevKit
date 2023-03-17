@@ -1,3 +1,29 @@
+<#
+    .SYNOPSIS
+    Restores NuGet packages and their dependencies for all AX packages in an AX environment.
+
+    .DESCRIPTION
+    The Restore-AxNuGetPackages function restores all NuGet packages and their dependencies for all AX packages in an AX environment.
+    It reads the packages.config file in the bin folder of each AX package, installs the NuGet packages, copies the compatible DLLs,
+    and creates AxReference files for each compatible DLL.
+
+    .PARAMETER AxEnvironmentName
+    A string containing the name of the AX environment to use when restoring NuGet packages. If not specified, the current AX environment will be used.
+
+    .EXAMPLE
+    Restore-AxNuGetPackages
+    This example restores all NuGet packages and their dependencies for all AX packages in the current AX environment.
+
+    .EXAMPLE
+    Restore-AxNuGetPackages -AxEnvironmentName "MyAXEnvironment"
+    This example restores all NuGet packages and their dependencies for all AX packages in the specified AX environment ("MyAXEnvironment").
+
+    .OUTPUTS
+    None.
+
+    .NOTES
+    This function requires the NuGet CLI to be installed and accessible in the system's PATH.
+#>
 function Restore-AxNuGetPackages {
     param (
         [string]$AxEnvironmentName = (Get-CurrentAxEnvironment).Name

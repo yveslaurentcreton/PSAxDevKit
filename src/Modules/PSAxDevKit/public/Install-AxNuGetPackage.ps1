@@ -1,3 +1,52 @@
+<#
+    .SYNOPSIS
+    Installs a NuGet package into an AX package and restores the package's dependencies.
+
+    .DESCRIPTION
+    The Install-AxNuGetPackage function installs a NuGet package into the specified AX package by updating the
+    packages.config file and then running the Restore-AxNuGetPackages function to restore the package and its dependencies.
+
+    .PARAMETER AxPackageName
+    A string containing the AX package name where the NuGet package should be installed.
+
+    .PARAMETER NuGetPackageId
+    A string containing the NuGet package ID to install.
+
+    .PARAMETER TargetFramework
+    A string containing the target framework to use when installing the NuGet package.
+
+    .PARAMETER PackageVersion
+    A string containing the version of the NuGet package to install. If not specified, the latest available version
+    will be installed.
+
+    .PARAMETER Prerelease
+    A switch parameter that, when specified, installs the latest pre-release version of the NuGet package if available.
+
+    .PARAMETER AxEnvironmentName
+    A string containing the name of the AX environment to use when installing the NuGet package. If not specified,
+    the current AX environment will be used.
+
+    .EXAMPLE
+    Install-AxNuGetPackage -AxPackageName "MyAXPackage" -NuGetPackageId "MyNuGetPackage" -TargetFramework "net472"
+    This example installs the latest version of the "MyNuGetPackage" NuGet package into the "MyAXPackage" AX package
+    with the target framework "net472".
+
+    .EXAMPLE
+    Install-AxNuGetPackage -AxPackageName "MyAXPackage" -NuGetPackageId "MyNuGetPackage" -TargetFramework "net472" -PackageVersion "1.0.0"
+    This example installs the specified version (1.0.0) of the "MyNuGetPackage" NuGet package into the "MyAXPackage" AX package
+    with the target framework "net472".
+
+    .EXAMPLE
+    Install-AxNuGetPackage -AxPackageName "MyAXPackage" -NuGetPackageId "MyNuGetPackage" -TargetFramework "net472" -Prerelease
+    This example installs the latest pre-release version of the "MyNuGetPackage" NuGet package into the "MyAXPackage" AX package
+    with the target framework "net472".
+
+    .OUTPUTS
+    None.
+
+    .NOTES
+    This function requires the NuGet CLI to be installed and accessible in the system's PATH.
+#>
 function Install-AxNuGetPackage {
     param(
         [Parameter(Mandatory = $true)]
