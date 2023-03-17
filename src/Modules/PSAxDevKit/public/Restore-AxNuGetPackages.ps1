@@ -39,7 +39,7 @@ function Restore-AxNuGetPackages {
                 foreach ($dll in $compatibleDlls) {
                     $destinationPath = Join-Path -Path $folderPath -ChildPath $dll.Name
                     Copy-Item -Path $dll.FullName -Destination $destinationPath -Force
-                    Add-AxReference -DllPath $destinationPath -AxReferenceFolderPath $axReferenceFolder.FullName
+                    Add-AxReference -DllPath $destinationPath -AxReferenceFolder $axReferenceFolder.FullName
                 }
             }
         }
