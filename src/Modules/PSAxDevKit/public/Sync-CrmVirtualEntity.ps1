@@ -28,21 +28,16 @@
 #>
 function Sync-CrmVirtualEntity {
     param (
-        [string]$CrmUrl,
-        [string]$TenantId,
-        [string]$ClientId,
-        [string]$ClientSecret,
-        [string]$VirtualEntity,
-        [string[]]$VirtualEntities,
+    [string]$CrmUrl,
+    [string]$TenantId,
+    [string]$ClientId,
+    [string]$ClientSecret,
+    [string]$VirtualEntity,
+    [string[]]$VirtualEntities)
 
-        [Parameter(Mandatory=$true, ParameterSetName='ByEntity')]
-        [ValidateScript({
-            if (-not $_ -and -not $VirtualEntities) {
-                throw "You must provide either 'VirtualEntity' or 'VirtualEntities' parameter."
-            }
-            return $true
-        })]$Validation
-    )
+    if (-not $VirtualEntity -and (-not $VirtualEntities -or $VirtualEntities.Count -eq 0)) {
+        throw "You must provide either 'VirtualEntity' or 'VirtualEntities' parameter."
+    }
 
     $crmApiUrl = "$CrmUrl/api/data/v9.2"
 
