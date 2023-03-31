@@ -39,6 +39,10 @@ function Sync-CrmVirtualEntity {
         throw "You must provide either 'VirtualEntity' or 'VirtualEntities' parameter."
     }
 
+    if ($VirtualEntity) {
+        $VirtualEntities = @($VirtualEntity)
+    }
+
     $crmApiUrl = "$CrmUrl/api/data/v9.2"
 
     # Acquire an access token
@@ -53,27 +57,36 @@ function Sync-CrmVirtualEntity {
     $tokenResponse = Invoke-RestMethod -Uri $tokenUrl -Method Post -ContentType "application/x-www-form-urlencoded" -Body $tokenRequestBody
     $accessToken = $tokenResponse.access_token
 
-    if ($VirtualEntity) {
-        $VirtualEntities = @($VirtualEntity)
-    }
-
     # Iterate through the virtual entities and refresh each one
     foreach ($virtualEntity in $VirtualEntities) {
-        $refreshApiUrl = "$crmApiUrl/mserp_financeandoperationsentities?`$filter=mserp_physicalname%20eq%20'$virtualEntity'"
-        $headers = @{
-            Authorization = "Bearer $accessToken"
-        }
-        $body = @{
-            mserp_refresh = $true
-        }
 
         try {
-            Invoke-RestMethod -Method Patch -Uri $refreshApiUrl  -Headers $Headers -Body $body
+            Write-Host "Refreshing virtual entity '$virtualEntity'..."
+
+            # Fetch the virtual entity
+            $fetchApiUrl = "$crmApiUrl/mserp_financeandoperationsentities?`$filter=mserp_physicalname%20eq%20'$virtualEntity'"
+            $headers = @{
+                Authorization = "Bearer $accessToken"
+            }
+            $entity = Invoke-RestMethod -Method Get -Uri $fetchApiUrl -Headers $Headers | Select-object -ExpandProperty value | Select-Object -First 1
+            
+            # Refresh the virtual entity
+            $refreshApiUrl = "$crmApiUrl/mserp_financeandoperationsentities($($entity.mserp_financeandoperationsentityid))/mserp_refresh"
+            $headers = @{
+                "Authorization" = "Bearer $accessToken"
+                "Content-Type" = "application/json"
+            }
+            $body = @{
+                value = $true
+            }
+            $bodyJson = $body | ConvertTo-Json
+            Invoke-RestMethod -Method Put -Uri $refreshApiUrl -Headers $Headers -Body $bodyJson
+
             Write-Host "Virtual entity '$virtualEntity' refreshed successfully."
         } catch {
-            Write-Host "Error refreshing virtual entity '$virtualEntity':"
-            Write-Host $_.Exception.Response.StatusCode.Value__
-            Write-Host $_.Exception.Message
+            Write-Error "Error refreshing virtual entity '$virtualEntity':"
+            Write-Error $_.Exception.Response.StatusCode.Value__
+            Write-Error $_.Exception.Message
         }
     }
 }
