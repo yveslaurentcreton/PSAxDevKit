@@ -7,7 +7,6 @@
 #
 
 @{
-
     # Script module or binary module file associated with this manifest.
     RootModule = '.\PSAxDevKit.psm1'
     
@@ -76,6 +75,8 @@
         'Get-AxPackages',
         'Get-CurrentAxEnvironment',
         'Get-NuGetInfo',
+        'Import-AxModelSource',
+        'Import-AxModelSources',
         'Install-AxNuGetPackage',
         'Restore-AxNuGetPackage',
         'Sync-CrmVirtualEntity'
